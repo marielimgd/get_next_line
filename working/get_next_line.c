@@ -10,23 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
-
-char	*get_next_line(int fd)
-{
-	int	readbytes;
-	char *cupbuffer;
-
-	cupbuffer = ft_calloc(3 + 1, sizeof(char));
-	if (!cupbuffer)
-		return (NULL);
-	readbytes = read(fd, cupbuffer, 3);
-	return (cupbuffer);
-	if (readbytes <= 0)
-		return (NULL);
-	return (cupbuffer);
-}
-
 #include "get_next_line.h" 
 
 char	*read_file_with_malloc(int fd, char *store_until_n)
