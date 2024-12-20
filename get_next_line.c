@@ -6,7 +6,7 @@
 /*   By: mmariano <mmariano@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/02 18:28:25 by mmariano          #+#    #+#             */
-/*   Updated: 2024/12/19 16:23:59 by mmariano         ###   ########.fr       */
+/*   Updated: 2024/12/20 08:24:21 by mmariano         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ char	*read_and_store(int fd, char *buffer)
 	char	*read_buffer;
 	int		bytes_read;
 
-	read_buffer = malloc((BUFFER_SIZE + 1) * sizeof(char));
+	read_buffer = malloc(BUFFER_SIZE + 1);
 	if (!read_buffer)
 		return (NULL);
 	bytes_read = 1;
@@ -47,7 +47,7 @@ char	*extract_line(char *buffer)
 		return (NULL);
 	while (buffer[i] && buffer[i] != '\n')
 		i++;
-	line = malloc(sizeof(char) * (i + 2));
+	line = malloc(i + 2);
 	if (!line)
 		return (NULL);
 	i = 0;
@@ -79,7 +79,7 @@ char	*extract_remaining(char *buffer)
 		free(buffer);
 		return (NULL);
 	}
-	remaining_content = malloc(sizeof(char) * (ft_strlen(buffer) - i));
+	remaining_content = malloc(ft_strlen(buffer) - i);
 	if (!remaining_content)
 		return (NULL);
 	i++;
