@@ -1,53 +1,42 @@
+#include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
+#include <fcntl.h>
 
-#define BUFFER_SIZE = 6 //desconsiderar, só pra BUFFER_SIZE existir por enquanto
+//desconsiderar, só pra BUFFER_SIZE existir por enquanto
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 5
+# endif
 
-char    *extract_remaining(char *buffer)
+
+size_t ft_strlen(const char *s)//const char significa que o input nao vai ser modificado durante a excução, pq a função é só de leitura
 {
-    int     i;
-    int     j;
-    char    *remaining_content;
-
-    i = 0;
-    while (buffer[i] && buffer[i] != '\n') //enquanto não chegar no \n, pula pro proximo char
-        i++;
-    if(!buffer[i]) //checa se buffer é valido
-    {
-        free(buffer);
-        return (NULL);
-    }
-    remaining_content = malloc(ft_strlen(buffer) - i); //aloca memoria para o conteudo do buffer depois do \n
-    if (!remaining_content) //checa se a alocação foi bem sucedida
-        return (NULL);
-    i++; //se chegou no \n, sai do loop
-    j = 0;
-    while(buffer[i])
-        remaining_content[j++] = buffer[i++]; //copia o conteudo após o \n pro buffer
-    remaining_content[j] = '\0'; //nullterm a string copiada
-    return (remaining_content); //retorna o conteúdo copiado
-}
-
-char *extract_line(char *buffer)
-{
-    int     index;
-    char    *line;
+    size_t index; //size_t é melhor do que int pq é unsigned, isso sigifica que sera grande o suficiente para armazenar o tamanho de qualquer objeto
 
     index = 0;
-    if(!buffer || !buffer[index]) //checa se buffer é valido
-        return  (NULL);
-    while (buffer[index] && buffer[index] != '\n')
-        index++; //contador para o tamanho da memoria que precisa ser alocada até \n
-    line = malloc(index + 2); //aloca memoria para a linha até n (armazenada em index) +nullterm +\n
-    if(!line)
-        return (NULL); //checa a alocação de memória para line
-    index = 0; //reseta o index
-    while (buffer[index] && buffer[index] != '\n')
+    if(!s)
+        return (0);
+    while(s[index] != '\0')
+        index++;
+    return (index);
+}
+
+char    *ft_strchr(char *s, int c)
+{
+    int index;//guarda o valor do index
+
+    index = 0;
+    if(!s)
+        return (NULL); //verifica se s é valida
+    if (c == '\0')
+        return ((char *)&s[ft_strlen(s)]); // caso o char procurado for \0, retorna um ponteiro pro ultimo char de s
+    while (s[index] != '\0')
     {
-        line[index] = buffer[index]; //copia buffer para line
+        if (s[index] == (char)c)//quando encontra o char, retorna um ponteiro pro endereço desse char
+            return ((char *)&s[index]); //isso é importante pq vai ser usado na função read_and_store
         index++;
     }
-    line[index] = '\0'; //coloca o nullterm no fim da linha
-    return (line); //retorna a linha completa (até \n)
+    return (NULL); //caso não encontre o c, retorna nulo
 }
 
 size_t  ft_strlcpy(char *dest, const char *src, size_t size)
@@ -58,10 +47,12 @@ size_t  ft_strlcpy(char *dest, const char *src, size_t size)
     index = 0;
     len_src = 0;
     while (src[len_src] != '\0') //enquanto não chegar no nullterm, aumenta o len_src
+    {
         len_src++;
+    }
     if (size > 0)
     {
-        while (src[index] != && index < (size - 1))//o loop continua até o nullterm e index menor que size
+        while (src[index] != '\0' && index < (size - 1))//o loop continua até o nullterm e index menor que size
         {
             dest[index] = src[index]; //copia src para dest
             index++;
@@ -94,36 +85,6 @@ char *ft_strjoin(char *str1, char *str2)
     return(new_string); //retorna a string concatenada
 }
 
-size_t ft_strlen(const char *s)//const char significa que o input nao vai ser modificado durante a excução, pq a função é só de leitura
-{
-    size_t index; //size_t é melhor do que int pq é unsigned, isso sigifica que sera grande o suficiente para armazenar o tamanho de qualquer objeto
-
-    index = 0;
-    if(!s)
-        return (0);
-    while(s[index] != '\0')
-        index++;
-    return (index);
-}
-
-char    *ft_strchr(char *s, int c)
-{
-    int index;//guarda o valor do index
-
-    index = 0;
-    if(!s)
-        return (NULL); //verifica se s é valida
-    if (c == '\0')
-        return ((char *)&s[ft_strlen(s)]); // caso o char procurado for \0, retorna um ponteiro pro ultimo char de s
-    while (s[index] != '\0')
-    {
-        if (s[index] == (char)c)//quando encontra o char, retorna um ponteiro pro endereço desse char
-            return ((char *)&s[index]); //isso é importante pq vai ser usado na função read_and_store
-        index++;
-    }
-    return (NULL); //caso não encontre o c, retorna nulo
-}
-
 char    *read_and_store(int fd, char *buffer)
 {
     char    *read_buffer; //guarda os caracteres lidos
@@ -149,7 +110,60 @@ char    *read_and_store(int fd, char *buffer)
         buffer = ft_strjoin(buffer, read_buffer); //concatena os chars recem lidos (read_buffer), aos ja armazenados (buffer)
     }
     free(read_buffer); //libera a memoria dos chars recem lidos
-    return(buffer); //retorna a linha até o \n
+    return (buffer); //retorna a linha até o \n
+}
+
+char *extract_line(char *buffer)
+{
+    int     index;
+    char    *line;
+
+    index = 0;
+    if(!buffer || !buffer[index]) //checa se buffer é valido
+        return  (NULL);
+    while (buffer[index] && buffer[index] != '\n')
+        index++; //contador para o tamanho da memoria que precisa ser alocada até \n
+    line = malloc(index + 2); //aloca memoria para a linha até n (armazenada em index) +nullterm +\n
+    if(!line)
+        return (NULL); //checa a alocação de memória para line
+    index = 0; //reseta o index
+    while (buffer[index] && buffer[index] != '\n')
+    {
+        line[index] = buffer[index]; //copia buffer para line
+        index++;
+    }
+    if (buffer[index] == '\n')
+    {
+        line[index] = buffer[index]; // se o char for \n, copiar também
+        index++;
+    }
+    line[index] = '\0'; //coloca o nullterm no fim da linha
+    return (line); //retorna a linha completa (até \n)
+}
+
+char    *extract_remaining(char *buffer)
+{
+    int     i;
+    int     j;
+    char    *remaining_content;
+
+    i = 0;
+    while (buffer[i] && buffer[i] != '\n') //enquanto não chegar no \n, pula pro proximo char
+        i++;
+    if(!buffer[i]) //checa se buffer é valido
+    {
+        free(buffer);
+        return (NULL);
+    }
+    remaining_content = malloc(ft_strlen(buffer) - i); //aloca memoria para o conteudo do buffer depois do \n
+    if (!remaining_content) //checa se a alocação foi bem sucedida
+        return (NULL);
+    i++; //se chegou no \n, sai do loop
+    j = 0;
+    while(buffer[i])
+        remaining_content[j++] = buffer[i++]; //copia o conteudo após o \n pro buffer
+    remaining_content[j] = '\0'; //nullterm a string copiada
+    return (remaining_content); //retorna o conteúdo copiado
 }
 
 char    *get_next_line(int fd)
@@ -172,4 +186,30 @@ char    *get_next_line(int fd)
     }
     buffer = extract_remaining(buffer); //coloca o conteudo após \n no buffer
     return(line); //retorna a linha completa
+}
+
+int main(void)
+{
+    int fd;
+    char *line;
+
+    // Open the file "text.txt" in read-only mode
+    fd = open("text.txt", O_RDONLY);
+    if (fd < 0)
+    {
+        perror("Error opening file");
+        return (1);
+    }
+
+    // Read and print lines using get_next_line
+    while ((line = get_next_line(fd)) != NULL)
+    {
+        printf("%s", line); // Print the line
+        free(line);         // Free the memory allocated by get_next_line
+    }
+
+    // Close the file descriptor
+    close(fd);
+
+    return (0);
 }
